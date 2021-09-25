@@ -4,7 +4,7 @@
 \usepackage{enumitem,cprotect}
 \begin{document}
 
-\Noms{Evan PETIT \\ Valentin VERSTRACTE}
+\Noms{Evan  PETIT \\ Valentin VERSTRACTE}
 \Titre{TP1 -  Utilisation du Shell}
 
  \exercice{Le shell}{
@@ -118,7 +118,7 @@ Tous doit bien évidemment être réalisé à partir du shell avec des commandes
 	    \item Tester les commandes \texttt{>echo var} et \texttt{>echo \$var}
 \reponse{\commande{> var=5\\> echo var \&\& >echo \$var\\var\\5}}
 	    \item Sur un autre shell tester de nouveau la commande \texttt{>echo \$var}. Que se passe-t'il?
-\reponse{...}	    
+\reponse{Le shell ne renvoie rien. On en déduit que les variables locales sont propres à un shell}	    
 	    \item Tester plusieurs variables d'environnement (globales). Déterminer votre numéro d’utilisateur (uid) sur le système ainsi que le nom et numéro du groupe auquel vous appartenez (gid).
 \reponse{...\\ \commande{>...}}	    
 	    \item Initialiser plusieurs variables par la commande \texttt{read} puis afficher les.
