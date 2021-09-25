@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.9.25)  25 SEP 2021 18:02
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.9.25)  25 SEP 2021 19:18
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -573,52 +573,82 @@ Overfull \hbox (6.79999pt too wide) in paragraph at lines 244--244
  []
 
 
-Overfull \hbox (6.79999pt too wide) in paragraph at lines 270--270
+Overfull \hbox (6.79999pt too wide) in paragraph at lines 294--294
+[]
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 294--294
+
+ []
+
+
+Overfull \hbox (6.79999pt too wide) in paragraph at lines 294--294
+[]
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 294--294
+
+ []
+
+
+Overfull \hbox (6.79999pt too wide) in paragraph at lines 294--294
+[]
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 294--294
+
+ []
+
+
+Overfull \hbox (6.79999pt too wide) in paragraph at lines 294--294
 [] 
  []
 
 
-Overfull \hbox (6.79999pt too wide) in paragraph at lines 270--270
-[] 
- []
-
-
-Overfull \hbox (6.79999pt too wide) in paragraph at lines 270--270
-[] 
- []
-
-
-Overfull \hbox (6.79999pt too wide) in paragraph at lines 270--270
-[] 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 310--310
+Underfull \hbox (badness 10000) in paragraph at lines 367--367
 
  []
 
 [3]
-Overfull \hbox (6.79999pt too wide) in paragraph at lines 310--310
+Overfull \hbox (6.79999pt too wide) in paragraph at lines 367--367
+[]
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 367--367
+
+ []
+
+
+Overfull \hbox (6.79999pt too wide) in paragraph at lines 367--367
+[]
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 367--367
+
+ []
+
+
+Overfull \hbox (6.79999pt too wide) in paragraph at lines 367--367
 [] 
  []
 
 
-Overfull \hbox (6.79999pt too wide) in paragraph at lines 310--310
-[] 
+Overfull \hbox (6.79999pt too wide) in paragraph at lines 367--367
+[]
  []
 
 
-Overfull \hbox (6.79999pt too wide) in paragraph at lines 310--310
-[] 
+Underfull \hbox (badness 10000) in paragraph at lines 367--367
+
  []
 
 
-Overfull \hbox (6.79999pt too wide) in paragraph at lines 310--310
-[] 
- []
-
-
-Overfull \hbox (6.79999pt too wide) in paragraph at lines 310--310
+Overfull \hbox (6.79999pt too wide) in paragraph at lines 367--367
 [] 
  []
 
@@ -632,7 +662,7 @@ Here is how much of TeX's memory you used:
  19521 multiletter control sequences out of 15000+600000
  539138 words of font info for 40 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
- 38i,10n,41p,238b,436s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 38i,10n,41p,238b,444s stack positions out of 5000i,500n,10000p,200000b,80000s
  </home/valentin/.texlive2019/texmf-var/fonts/pk/ljfour/jknappen
 /ec/tcrm1095.600pk> </home/valentin/.texlive2019/texmf-var/fonts/pk/ljfour/jkna
 ppen/ec/ectt1095.600pk> </home/valentin/.texlive2019/texmf-var/fonts/pk/ljfour/
@@ -640,7 +670,7 @@ jknappen/ec/ectt0900.600pk> </home/valentin/.texlive2019/texmf-var/fonts/pk/ljf
 our/jknappen/ec/ecbx1095.600pk> </home/valentin/.texlive2019/texmf-var/fonts/pk
 /ljfour/jknappen/ec/ecbx1200.600pk> </home/valentin/.texlive2019/texmf-var/font
 s/pk/ljfour/jknappen/ec/ecrm1095.600pk>
-Output written on crTP1.pdf (4 pages, 83466 bytes).
+Output written on crTP1.pdf (4 pages, 84109 bytes).
 PDF statistics:
  281 PDF objects out of 1000 (max. 8388607)
  34 compressed objects within 1 object stream

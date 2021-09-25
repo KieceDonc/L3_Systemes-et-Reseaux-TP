@@ -317,25 +317,25 @@ Tous doit bien évidemment être réalisé à partir du shell avec des commandes
 			\item Appliquer la commande \texttt{chmod 600 rep}. Puis tester la commande \texttt{cd rep}.
 			\reponse{
 				Résultats :\commande{>Permission non accordée}\\ 
-				Commentaires : 	
+				Commentaires : La permission d'exécution n'est donnée à personne. Ainsi il est impossible de se rendre dans le dossier rep 
 			}
 			
 			%////////////////////////////////////
  			%////////////// Exo 6 Q°2B
  			%////////////////////////////////////
        		\item Appliquer la commande \texttt{chmod 500 rep}. Puis tester les commandes \texttt{cd rep}, \texttt{ls rep} et \texttt{echo 'coucou'>rep/fich2}.
-       		\reponse{
-       			Résultats :			\\
-				Commentaires : 		
+       		\reponse{\\
+       			Résultats :	Toutes les commandes fonctionnent hormis la dernière dont voici l'erreur\commande{>Permission non accordée}\\
+				Commentaires : 500 donne uniquement au propriétaire les permissions de lire et d'exécuter. Il est donc normal que l'on puisse pas créer ( écrire ) un fichier
 			}
 			
 			%////////////////////////////////////
  			%////////////// Exo 6 Q°2C
  			%////////////////////////////////////	
 			\item Appliquer la commande \texttt{chmod 300 rep}. Puis tester les commandes \texttt{cd rep}, \texttt{ls rep} et \texttt{echo 'coucou'>rep/fich2}.
-			\reponse{
-				Résultats :			\\
-				Commentaires : 		
+			\reponse{\\
+				Résultats : Toutes les commandes fonctionnent hormis ls rep avec toujours la même erreur\commande{>Permission non accordée}\\
+				Commentaires : 300 donne uniquement au propriétaire les permissions d'écrire et d'exécuter. Il est donc normal que l'on puisse pas afficher ( lire ) les fichiers
 			}
 		\end{enumerate}
 		
