@@ -1,0 +1,77 @@
+EXERCICE 1
+
+  Q1
+Réponse du tp1 exo 5 q 5 ou 6
+
+  Q2
+Retourne le chemin absolu du répertoire courant
+
+  Q3
+> ls -dl
+> drwx------ 68 vv224843...
+Oui cela semble logique que l'étudiant possède tous les droits dans son dossier personnel, et aucun dans les dossiers des autres.
+
+  Q4a
+> wc -l cyrano.txt
+> 9
+La commande fonctionne correctement
+
+
+  Q4b
+> grep "monsieur" cyrano.txt
+
+  Q5
+
+> file ../TP2
+  ../TP2: directory
+
+  Q7
+> find cyrano.txt
+cyrano.txt
+
+
+  Q8
+
+> find . -name '*.pdf' -size +20M
+ne retourne aucun fichier ( aucun pdf > 20Mo )
+
+  Q9
+> stat crTP2.pdf | grep "Taille"
+> Taille : 58384     	Blocs : 120
+Le fichier possède une taille de 58384 octets, cela représnete 120 blocs mémoire.
+
+EXERCICE 2
+
+  Q1
+> ( hostname ; date ; echo " " ; cat /etc/services ) > "titi.txt"
+
+  Q2
+RESULTATS : fichRed contient  cat: fichierInconnu: Aucun fichier ou dossier de ce type
+COMMENTAIRES : Le message d'erreur de la commande cat est envoyée dans le fichier fichRed
+
+EXERCICE 3
+
+  Q1
+
+
+  Q2
+
+
+  Q3
+
+
+EXERCICE 4
+
+  Q1
+
+
+  Q2
+
+
+  Q3
+
+
+  Q4
+
+
+  Q5

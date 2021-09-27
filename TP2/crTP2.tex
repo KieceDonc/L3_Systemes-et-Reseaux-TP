@@ -1,0 +1,93 @@
+\documentclass[a4paper,11pt]{exam}
+\usepackage{style/styleCompteRendu}
+
+
+
+\begin{document}
+
+\Noms{Marie Dupond \\ Maurice Durand}
+\Titre{TP2 -  Systèmes de fichiers - commandes}
+
+
+%/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+\exercice{Manipulation d'une arborescence de fichiers}
+{
+      \begin{enumerate}
+	\item Déterminer votre numéro d’utilisateur (uid) sur le système ainsi que le nom et numéro du groupe auquel vous appartenez (gid).
+\reponse{\commande{>...}}	
+	  \item Déplacer vous dans votre répertoire d’accueil avec la commande \texttt{cd}. Utiliser la commande \texttt{pwd}.
+\reponse{...}	  
+	  \item Quels sont les droits d'accès de votre répertoire d’accueil? Cela vous parait-il logique?
+\reponse{\commande{>...}\\ Commentaires : ...}	  
+	  \item Télécharger le fichier Cyrano.txt
+	    \begin{enumerate}
+	    \item Afficher ce fichier par les commandes \texttt{cat} et \texttt{more} et tester dessus la commande \texttt{wc}.
+\reponse{\commande{>...}\\ Commentaires : ...}	 	    
+	    \item Chercher les lignes contenant le mot \texttt{monsieur} dans ce fichier avec la commande \texttt{grep}. Tester les différentes options.
+\reponse{\commande{>...}\\ Commentaires : ...}	 	    
+	    \end{enumerate}
+	  \item Tester sur le contenu d'un répertoire entier la commande \texttt{file} (pour avoir plusieurs résultats différents).
+\reponse{\commande{>...}\\ Commentaires : ...}	 	  
+	\item Créer un dossier \texttt{MonDossier}. Copier puis déplacer des fichiers d'un autre répertoire dans ce dossier. Changer les droits de ce dossier. Supprimer un des fichiers contenus dans ce dossier. Supprimer ce dossier.
+	\item Retrouver un fichier sur votre session à partir de la commande \texttt{find} et du nom du fichier.
+\reponse{\commande{>...}\\ Commentaires : ...}	 	
+	\item Combien y a t-il sur votre session de fichiers avec l'extension \texttt{.pdf}, de plus de 20Mo?
+\reponse{\commande{>...}\\ Résultat : ...}	
+      \item Sur un fichier volumineux, comparer la taille du fichier et le volume utilisé sur le disque.
+\reponse{\commande{>...}\\ Commentaires : ...}      
+      \end{enumerate}
+}
+
+
+%/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+\exercice{Redirection}
+{
+\begin{enumerate}
+ \item Créer à partir du shell un fichier texte qui contiendra le nom de la machine, la date et le répertoire courant, puis une ligne vide et le contenu du fichier \texttt{/etc/services}.
+    \reponse{\commande{>...}}
+ \item Lancer la commande   \commande{cat fichierInconnu 2> fichRed}. Puis afficher le contenu de \texttt{fichRed}.
+    \reponse{Résultats : 			\\
+	      Commentaires : 			}
+\end{enumerate}
+
+ 	
+
+}
+
+%/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+\exercice{Les filtres}
+{
+	Reprenez le fichier \texttt{Cyrano.txt}. À partir des commande \texttt{tr}, \texttt{head}, \texttt{tail} et \texttt{sort}, donner les commandes pour ...
+	\begin{enumerate}
+	\item Afficher les lignes dans l'ordre croissant, dans l'ordre décroissant, dans un ordre aléatoire.
+\reponse{\commande{>...}}	
+	\item Créer un fichier avec les 5 premières lignes, les 5 dernières, les lignes 5 à 10.
+\reponse{\commande{>...}}	
+	\item Remplacer les \texttt{a} par des \texttt{i}.
+\reponse{\commande{>...}}	
+	\end{enumerate}
+}
+
+%/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+\exercice{Les pipes}
+{
+	À l'aide d'un pipe, écrire des enchaînements de commandes pour 
+	\begin{enumerate}	
+	\item Faire afficher le résultat d'un \texttt{ls} avec les noms de fichier en majuscules.
+\reponse{\commande{>...}}	
+	\item Faire afficher les chemins de la variable PATH séparés par des \textbf{-} et non par des \textbf{:}
+\reponse{\commande{>...}}	
+	\item Recopier dans un fichier nommé \texttt{listeVar} la liste des variable d’environnement dont le nom contient au moins une fois le caractère \_.
+\reponse{\commande{>...}}	
+	\item afficher l’ensemble des fichiers textes codés en UTF-8
+\reponse{\commande{>...}}	
+	\item  afficher l’ensemble des fichiers dans le répertoire REP que le propriétaire peut lire, modifier mais pas exécuter mais qu’un membre du groupe propriétaire peut juste lire.
+\reponse{\commande{>...}}
+	\end{enumerate}
+}
+ 
+
+
+\end{document}
+
+
