@@ -53,25 +53,36 @@ EXERCICE 3
 
   Q1
 
+	a- head cyrano.txt -n 54
+	b-
+	c- sort cyrano.txt -R
+	
 
   Q2
 
 
   Q3
 
+	tr 'a' 'i' <cyrano.txt 
 
 EXERCICE 4
 
   Q1
 
+	ls | grep ^[A-Z]
 
   Q2
 
+	echo $PATH | tr ':' '-'
 
   Q3
-
+  
+	printenv | grep .'_' >> listVar 
 
   Q4
 
 
   Q5
+  
+  	ls -l REP | grep .-*r--rw-
+  	
