@@ -53,13 +53,14 @@ EXERCICE 3
 
   Q1
 
-	a- head cyrano.txt -n 54
-	b-
-	c- sort cyrano.txt -R
+	a- sort cyrano.txt
+	b- sort -r cyrano.txt
+	c- sort -R cyrano.txt 
 	
 
   Q2
-
+  
+	head -n 5 cyrano.txt > fichier.txt && tail -n 5 cyrano.txt >> fichier.txt && head -n 10 cyrano.txt | tail -n 5 >> fichier.txt
 
   Q3
 
@@ -81,6 +82,7 @@ EXERCICE 4
 
   Q4
 
+	file -i * | grep utf-8
 
   Q5
   
