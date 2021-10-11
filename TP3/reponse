@@ -1,0 +1,37 @@
+﻿Exercice 2 :
+
+1\ -rw-r----- 1 vv224843 etudiant   32 oct.  11 13:52 scriptTP3
+
+2\ chmod 777 scriptTP3 -> ./scriptTP3 5 6 4 7 8 9 -> il y a 6 paramètres : 5 6 4 7 8 9
+
+3\ chmod 111 scriptTP3 ou chmod u+x scriptTP3 
+
+4\ On ajoute le script dans un des dossiers contenu dans la variable PATH
+Exemple : 
+PATH=/sbin:/bin:/usr/bin:/usr/local/bin
+J'ajoute mon dossier à /usr/bin
+
+Exercice 3 :
+
+1\
+pwd = Remote working directory: /home4/ep298479
+lpwd = Local working directory: /home4/vv224843/Documents/L3/SystemesEtReseaux
+pwd = Remote working directory: /home4/ep298479/Documents
+lpwd = Local working directory: /home4/vv224843/Documents/L3/SystemesEtReseaux
+
+2\ ls = Info1a     Info1b     Info2a     Info2b     Info3a     Info3b     Info4A     
+Info4B     Lire.java  S5   
+
+lls = scriptTP3  TD1	TP1  TP2  TP3
+
+3\ get Lire.java
+
+4\ lls Lire.java  scriptTP3  TD1  TP1	TP2  TP3
+
+5\ rm Lire.java : Removing /home4/ep298479/Documents/Lire.java
+put Lire.java Uploading Lire.java to /home4/ep298479/Documents/Lire.java
+
+6\ ls Info1a     Info1b     Info2a     Info2b     Info3a     Info3b     Info4A     
+Info4B     Lire.java  S5        
+
+7\ !command find -iname "*.pdf" -size +200k
