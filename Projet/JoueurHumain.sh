@@ -22,7 +22,7 @@ function askCardToPlay(){
 
 function waitForCards(){
   CURRENT_CARDS=() # Contient les cartes du joueur
-  for x in $( eval echo {1..$(($ROUND))} );do
+  for x in $( eval echo {1..$ROUND} );do
     INCOMING_CARD=$(cat $PLAYER_ID.pipe)
     CURRENT_CARDS+=($INCOMING_CARD)
   done
