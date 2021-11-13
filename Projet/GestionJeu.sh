@@ -36,6 +36,9 @@ function InitPlayers(){
   echo -n "Entrer le nombre de joueur : "
   read NBPLAYERS
 
+  # On supprime les pipes existent ( normalement non nécessaire, cette fonction est juste là pendant la période de développement et sert de sécurité une fois le projet finit )
+  removePipe
+  
   # On initialise les terminaux + pipes
   for x in $( eval echo {0..$(($NBPLAYERS-1))} );do
     xterm -e "./JoueurHumain.sh $x" & # Initialisation des terminaux en donnant en paramètre le n° du joueur
@@ -74,16 +77,17 @@ function SortCurrentRoundCards(){
 }
 
 function SendCardsToPlayers(){
+  echo $NBPLAYERS
   for x in $( eval echo {0..$(($NBPLAYERS-1))} );do # Pour chaque joueur 
+    echo $x
     for y in $( eval echo {1..$ROUND} );do # Pour le numéro de carte que l'on doit envoyé
       CURRENT_CARD=${CARDS[$LAST_CARD_INDEX]} # On recupère une carte 
       $(echo "0;"$CURRENT_CARD > $x.pipe)  # On l'envoit au joueur
       CURRENT_ROUND_UNSORTED_CARDS+=($CURRENT_CARD) # On indique dans une liste non trier qu'une nouvelle carte est dans le jeu
       LAST_CARD_INDEX+=1 # On incrémente l'index qui décrit le n° de la carte envoyé à un joueur
-      echo "card $CURRENT_CARD sent to $X"
+      echo $x
     done
-    $(echo "5;" > $x.pipe)  # On notifie que toutes les cartes ont été envoyées
-    echo "cards sent to $X"
+    $(echo "5;Msg pour éviter de crash" > $x.pipe)  # On notifie que toutes les cartes ont été envoyées
   done
   SortCurrentRoundCards # On trie du plus petit au plus grand les cartes envoyé aux joueurs 
 }
@@ -127,7 +131,16 @@ function ListenPipe(){
 }
 
 function removePipe(){
-  rm *.pipe
+  for x in $( eval echo {0..$(($NBPLAYERS-1))} );do
+    CURRENT_PIPE="$x.pipe"
+    if [[ -p $CURRENT_PIPE ]];then
+      rm $x.pipe
+    fi
+  done
+  CURRENT_PIPE="gestionJeu.pipe"
+  if [[ -p $CURRENT_PIPE ]];then
+    rm $CURRENT_PIPE
+  fi
 }
 
 InitAndRandomlySortCards
