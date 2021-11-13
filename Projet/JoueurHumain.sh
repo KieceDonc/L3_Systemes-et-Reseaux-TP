@@ -10,7 +10,8 @@ function ListenCardToPlay(){
   while $CANT_PLAY_THIS_CARD;do # Tant que l'entrée utilisateur est mauvaise on répète
     read CARD_TOPLAY # On demande au joueur d'input la carte qu'il souhaite jouer, CARD_TOPLAY = Carte choisit par l'utilisateur et qui doit être jouer
     
-    if [[ $CARD_TOPLAY =~ ^-?[0-100]+$ ]];then # On regarde si l'entrée est bien un chiffre ou si il s'agit d'un message du shell / mauvaise entrée
+    if [[ $CARD_TOPLAY =~ ^-?[0-9]+$ ]];then # On regarde si l'entrée est bien un chiffre ou si il s'agit d'un message du shell / mauvaise entrée
+      echo "9;test" > $PLAYER_ID.pipe
       for CURRENT_CARD in "${CURRENT_CARDS[@]}";do # On vérifie si elle est présente dans son jeu parmit toutes ses cartes
         if [ $CARD_TOPLAY -eq $CURRENT_CARD ];then # On vérifie si la carte courante est présente dans son jeu
           CANT_PLAY_THIS_CARD=false # elle est présente
@@ -45,33 +46,28 @@ function ListenPipe(){
   echo "API_CALL "$API_CALL
   echo "API_MESSAGE "$API_MESSAGE
   if [ $(($API_CALL)) -eq $((0)) ];then # Une carte a été reçu
-      INCOMING_CARD=$(cat $PLAYER_ID.pipe)
-      CURRENT_CARDS+=($INCOMING_CARD)
+      CURRENT_CARDS+=($API_MESSAGE)
       NB_CARDS+=1
-      ListenPipe  
   elif [ $(($API_CALL)) -eq $((5)) ];then # Toutes les cartes ont été reçu
     echo "Cartes reçut ! Vos cartes : "${CURRENT_CARDS[@]}
-    ListenPipe
   elif [ $(($API_CALL)) -eq $((1)) ];then # Une carte du tour courant a été trouvé
     echo $API_MESSAGE
-    ListenPipe
   elif [ $(($API_CALL)) -eq $((2)) ];then # Une mauvaise carte a été trouvé, le tour recommence
     echo $API_MESSAGE
     CURRENT_CARDS=()
-    ListenPipe
   elif [ $(($API_CALL)) -eq $((3)) ];then # Le tour est terminé, on passe au tour suivant
     echo $API_MESSAGE
     CURRENT_CARDS=()
-    ListenPipe
   elif [ $(($API_CALL)) -eq $((4)) ];then # Le jeu est terminé
     echo $API_MESSAGE
     exit
-  elif [ $(($API_CALL)) -eq $((6)) ];then # user input
-
+  elif [ $(($API_CALL)) -eq $((9)) ];then # Le jeu est terminé
+    echo $API_MESSAGE
   fi
+  ListenPipe &  
 }
 
 echo "Vous êtes le joueur n°"$PLAYER_ID
 echo "En attente de vos cartes ..."
-ListenPipe
+ListenPipe &
 ListenCardToPlay 
