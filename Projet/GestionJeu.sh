@@ -4,10 +4,11 @@ CARDS=() # Tableau qui contient les cartes mélangées
 declare -i LAST_CARD_INDEX=0 # On déclare un integer. Il décrit l'index de la dernière envoyé à un joueur dans le tableau CARDS 
 declare -i ROUND=1 # On déclare un integer. Il décrit le numéro du tour
 CURRENT_ROUND_SORTED_CARDS=() # Liste des cartes tirer et trier pour le tour courant
-declare -i CURRENT_ROUND_INDEX=0 # On déclare un integer. Il décrit l'index de la carte que l'on doit trouver pour le round courant
+declare -i CURRENT_CARD_INDEX=0 # On déclare un integer. Il décrit l'index de la carte que l'on doit trouver pour le round courant
 NBPLAYERS=0 # Décrit le nombre de joueur
 NBROBOT=0 # Décrit le nombre de robot
 declare -i MAX_ROUND=0 # On déclare un integer. Décrit le nombre maximun de tour
+declare -i MSG_INDEX=1 # On déclare un integer. Il décrit la ligne du dernier message envoyé
 
 function InitAndRandomlySortCards(){
   
@@ -37,7 +38,7 @@ function InitPlayers(){
   read NBPLAYERS
 
   # On supprime les pipes existent ( normalement non nécessaire, cette fonction est juste là pendant la période de développement et sert de sécurité une fois le projet finit )
-  removePipe
+  removeOldFiles
   
   # On initialise les terminaux + pipes
   for x in $( eval echo {0..$(($NBPLAYERS-1))} );do
@@ -60,6 +61,8 @@ function InitMaxRound(){
 }
 
 function SortCurrentRoundCards(){
+  CURRENT_ROUND_SORTED_CARDS=()
+  CURRENT_CARD_INDEX=0
   UNSORTED_CARDS_LENGTH=$(($ROUND*$NBPLAYERS-1))
   for x in $( eval echo {0..$(($ROUND*$NBPLAYERS-1))} );do
     CURRENT_MINUS=1000
@@ -93,53 +96,61 @@ function SendCardsToPlayers(){
 
 function updateFoundedCards(){
   FOUNDED_CARDS="( " # On prépare l'affichage de toutes les cartes trouver
-  for x in $( eval echo {0..$CURRENT_ROUND_INDEX);do # On affiche toutes les cartes trouver
-    FOUNDED_CARDS=FOUNDED_CARDS+"${CURRENT_ROUND_SORTED_CARDS[CURRENT_ROUND_INDEX]} "
+  for x in $( eval echo {0..$(($CURRENT_CARD_INDEX))} );do # On affiche toutes les cartes trouver
+    FOUNDED_CARDS="$FOUNDED_CARDS ${CURRENT_ROUND_SORTED_CARDS[x]} "
   done
-  FOUNDED_CARDS=FOUNDED_CARDS+")"
+  FOUNDED_CARDS="$FOUNDED_CARDS )"
 }
 
 function ListenPipe(){
-  mkfifo gestionJeu.pipe
+  if [[ ! -p "gestionJeu.pipe" ]];then
+    mkfifo gestionJeu.pipe
+  fi
+
   INCOMING_CARD=$(cat gestionJeu.pipe) # On récupère la carte reçus
-  WINNING_CARD=${CURRENT_ROUND_SORTED_CARDS[CURRENT_ROUND_INDEX]} # On récupère la carte à trouvée
+  WINNING_CARD=${CURRENT_ROUND_SORTED_CARDS[CURRENT_CARD_INDEX]} # On récupère la carte à trouvée
   if [ $(($WINNING_CARD)) -eq $(($INCOMING_CARD)) ];then
     updateFoundedCards
+    echo 'Bravo, une carte a été trouvés, voici les cartes trouvées : '$FOUNDED_CARDS >> gestionJeu.tmp
     for x in $( eval echo {0..$(($NBPLAYERS-1))} );do # On envoit un message à tout les joueurs disant que la carte trouvée était la bonne
-      $(echo "1;Bravo, la carte $WINNING_CARD a été trouvés, voici les cartes trouvées : $FOUNDED_CARDS" > $x.pipe)
+      echo "1;$MSG_INDEX" >> $x.pipe
     done
-    CURRENT_ROUND_INDEX+=1 # Le tour continue, on incrémente l'index de la prochaine carte à trouvée
-    if [ $(($CURRENT_ROUND_INDEX)) -eq $(($ROUND*$NBPLAYERS)) ];then # On vérifie si la dernière carte trouvée correspond à la dernière carte pouvant être jouer ce tour ( on vérifie si le tour est terminé )
+    MSG_INDEX+=1
+    CURRENT_CARD_INDEX+=1 # Le tour continue, on incrémente l'index de la prochaine carte à trouvée
+    if [ $(($CURRENT_CARD_INDEX)) -eq $(($ROUND*$NBPLAYERS)) ];then # On vérifie si la dernière carte trouvée correspond à la dernière carte pouvant être jouer ce tour ( on vérifie si le tour est terminé )
       if [ $(($ROUND*$NBPLAYERS)) -le $((100)) ];then # On vérifie si il reste un tour
-        $(echo "3;Félications, le tour n°$ROUND est terminé, on passe au tour suivant" > $x.pipe)
+        echo 'Félications, le tour n°'$ROUND' est terminé, on passe au tour suivant' >> gestionJeu.tmp
+        for x in $( eval echo {0..$(($NBPLAYERS-1))} );do # On envoit un message à tout les joueurs 
+          echo "3;$MSG_INDEX" > $x.pipe
+        done
+        MSG_INDEX+=1
         ROUND+=1
         SendCardsToPlayers
      else
-        $(echo "4;Félications, le jeu est terminé" > $x.pipe)
-        removePipe
+        echo 'Félications, le jeu est terminé' >> gestionJeu.tmp
+        for x in $( eval echo {0..$(($NBPLAYERS-1))} );do # On envoit un message à tout les joueurs 
+          echo "4;$MSG_INDEX" > $x.pipe
+        done
+        MSG_INDEX+=1
+        removeOldFiles
         exit
       fi
     fi
   else
+    echo "Perdu, la carte $INCOMING_CARD n'était pas la bonne, la bonne était : $WINNING_CARD. On recommence !" >> gestionJeu.tmp
     for x in $( eval echo {0..$(($NBPLAYERS-1))} );do # On envoit un message à tout les joueurs disant que la carte trouvée était la mauvaise
-      $(echo "2;Perdu, la carte $INCOMING_CARD n'était pas la bonne, la bonne était : $WINNING_CARD. On recommence !" > $x.pipe) 
+      echo "2;$MSG_INDEX" > $x.pipe
     done
-    CURRENT_ROUND_INDEX=0 # Le tour recommence, on réinitialise l'index de la prochaine carte à trouvée
+    MSG_INDEX+=1
+    SendCardsToPlayers
+    CURRENT_CARD_INDEX=0 # Le tour recommence, on réinitialise l'index de la prochaine carte à trouvée
   fi
   ListenPipe
 }
 
-function removePipe(){
-  for x in $( eval echo {0..$(($NBPLAYERS-1))} );do
-    CURRENT_PIPE="$x.pipe"
-    if [[ -p $CURRENT_PIPE ]];then
-      rm $x.pipe
-    fi
-  done
-  CURRENT_PIPE="gestionJeu.pipe"
-  if [[ -p $CURRENT_PIPE ]];then
-    rm $CURRENT_PIPE
-  fi
+function removeOldFiles(){
+  rm *.tmp 2>/dev/null
+  rm *.pipe 2>/dev/null
 }
 
 InitAndRandomlySortCards
