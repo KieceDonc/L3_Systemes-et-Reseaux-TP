@@ -1,0 +1,8 @@
+#!/bin/bash
+
+FCHPDF=$1
+
+for l in {A..G};
+do
+	if "Groupe
+done
