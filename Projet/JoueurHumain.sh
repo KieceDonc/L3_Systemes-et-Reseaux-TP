@@ -70,7 +70,7 @@ function ListenPipe(){
       CURRENT_CARDS+=($API_MESSAGE)
       NB_CARDS+=1
   elif [ $(($API_CALL)) -eq $((5)) ];then # Toutes les cartes ont été reçu
-    echo "Cartes reçut ! Vos cartes : "${CURRENT_CARDS[@]}
+    echo "Cartes reçues ! Vos cartes : "${CURRENT_CARDS[@]}
     ListenCardToPlay &
   elif [ $(($API_CALL)) -eq $((1)) ];then # Une carte du tour courant a été trouvé
     echo $(awk "NR==$API_MESSAGE" gestionJeu.tmp)
