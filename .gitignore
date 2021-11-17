@@ -3,3 +3,8 @@
 *.pipe
 *.tmp
 *.txt
+*.aux
+*.log
+*.out
+*.toc
+*.gz
