@@ -14,13 +14,24 @@ function InitPlayers(){
   echo -n "Entrer le nombre de joueur : "
   read NBPLAYERS
 
+  # On demande le nombre de robot 
+  echo -n "Entrer le nombre de robot : "
+  read NBROBOT
+
   # On supprime les pipes existent ( normalement non nécessaire, cette fonction est juste là pendant la période de développement et sert de sécurité une fois le projet finit )
   removeOldFiles
   
-  # On initialise les terminaux + pipes
-  for x in $( eval echo {0..$(($NBPLAYERS-1))} );do
-    xterm -e "./JoueurHumain.sh $x" & # Initialisation des terminaux en donnant en paramètre le n° du joueur
-    mkfifo $x.pipe # Initialisation des pipes qui prennent le nom "n°Joueur.pipe"
+  if [ $(($NBPLAYERS)) -gt $((0)) ];then
+    # On initialise les terminaux + pipes pour les joueurs
+    for x in $( eval echo {0..$(($NBPLAYERS-1))} );do
+      xterm -e "./JoueurHumain.sh $x" & # Initialisation des terminaux en donnant en paramètre le n° du joueur
+      mkfifo $x.pipe # Initialisation des pipes qui prennent le nom "n°Joueur.pipe"
+    done
+  fi
+  
+  for x in $( eval echo {$(($ROUND*$NBPLAYERS))..$(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT-1))} );do
+    xterm -e "./JoueurRobot.sh $x" & # Initialisation des terminaux en donnant en paramètre le n° du robot
+    mkfifo $x.pipe # Initialisation des pipes qui prennent le nom "n°robot.pipe"
   done
 }
 
@@ -29,7 +40,7 @@ function InitMaxRound(){
   NOT_FOUND=true # On initialise un booléen qui va servir de drapeau pour savoir si on a trouver le nombre maximum de tour
   while $NOT_FOUND 
   do
-    if [ $(($MAX_ROUND*$NBPLAYERS)) -le $((100)) ];then # On vérifie si le nombre de carte distribués est inférieur ou égale à 100
+    if [ $(($MAX_ROUND*$NBPLAYERS+$MAX_ROUND*$NBROBOT)) -le $((100)) ];then # On vérifie si le nombre de carte distribués est inférieur ou égale à 100
       MAX_ROUND+=1 # On peut rajouter un tour
     else
       NOT_FOUND=false # On a trouver le nombre max de tour
@@ -37,8 +48,7 @@ function InitMaxRound(){
   done
 }
 
-function SendCardsToPlayers(){
-
+function SendCards(){
   # On initialise les cartes
   CARDS=()
 
@@ -61,19 +71,19 @@ function SendCardsToPlayers(){
 
   # On envoit les cartes pour chaque joueur
   CURRENT_ROUND_UNSORTED_CARDS=()
-  for x in $( eval echo {0..$(($ROUND*$NBPLAYERS-1))} );do # Pour chaque joueur 
+  for x in $( eval echo {0..$(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT-1))} );do # Pour chaque joueur 
     CURRENT_CARD=${CARDS[x]} # On recupère une carte 
-    PLAYER_ID_TO_SEND="$(($x / $ROUND))"
-    $(echo "0;"$CURRENT_CARD > $PLAYER_ID_TO_SEND.pipe)  # On l'envoit au joueur
+    ID_TO_SEND="$(($x / $ROUND))"
+    echo "sending cards $x to player $ID_TO_SEND"
+    echo "0;"$CURRENT_CARD > $ID_TO_SEND.pipe  # On l'envoit au joueur
     CURRENT_ROUND_UNSORTED_CARDS+=($CURRENT_CARD) # On indique dans une liste non trier qu'une nouvelle carte est dans le jeu
   done
-  for x in $( eval echo {0..$(($NBPLAYERS-1))} );do # Pour chaque joueur 
-    $(echo "5;Msg pour éviter de crash" > $x.pipe)  # On notifie que toutes les cartes ont été envoyées
-  done
+  sendMsgPlayers "5" "Msg pour éviter de crash"
+  sendMsgRobot "5" "Msg pour éviter de crash"
 
   # On trie les cartes que les joueurs doivent trouver
   CURRENT_ROUND_SORTED_CARDS=()
-  for x in $( eval echo {0..$(($ROUND*$NBPLAYERS-1))} );do
+  for x in $( eval echo {0..$(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT-1))} );do
     CURRENT_MINUS=1000
     MINUS_INDEX=-1
     UNSORTED_INDEX=$((${#CURRENT_ROUND_UNSORTED_CARDS[@]}-1))
@@ -131,31 +141,45 @@ function ListenPipe(){
   WINNING_CARD=${CURRENT_ROUND_SORTED_CARDS[CURRENT_CARD_INDEX]} # On récupère la carte à trouvée
   if [ $(($WINNING_CARD)) -eq $(($INCOMING_CARD)) ];then
     updateFoundedCards
-    sendMsg "1" "Bravo, une carte a été trouvés, voici les cartes trouvées : $FOUNDED_CARDS"
+    sendMsgPlayers "1" "Bravo, une carte a été trouvés, voici les cartes trouvées : $FOUNDED_CARDS"
+    sendMsgRobot "1" $FOUNDED_CARDS
     CURRENT_CARD_INDEX+=1 # Le tour continue, on incrémente l'index de la prochaine carte à trouvée
-    if [ $(($CURRENT_CARD_INDEX)) -eq $(($ROUND*$NBPLAYERS)) ];then # On vérifie si la dernière carte trouvée correspond à la dernière carte pouvant être jouer ce tour ( on vérifie si le tour est terminé )
-      if [ $(($ROUND*$NBPLAYERS)) -le $((100)) ];then # On vérifie si il reste un tour
-        sendMsg "3" "Félications, le tour n°'$ROUND' est terminé, on passe au tour suivant"
+    if [ $(($CURRENT_CARD_INDEX)) -eq $(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT)) ];then # On vérifie si la dernière carte trouvée correspond à la dernière carte pouvant être jouer ce tour ( on vérifie si le tour est terminé )
+      if [ $(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT)) -le $((100)) ];then # On vérifie si il reste un tour
+        sendMsgPlayers "3" "Félications, le tour n°'$ROUND' est terminé, on passe au tour suivant"
+        sendMsgRobot "3" $ROUND
         ROUND+=1
-        SendCardsToPlayers
+        SendCards
      else
-        sendMsg "4" "Félications, le jeu est terminé" 
+        sendMsgPlayers "4" "Félications, le jeu est terminé" 
+        sendMsgRobot "4"
         removeOldFiles
         exit
       fi
     fi
   else
-    sendMsg "2" "Perdu, la carte $INCOMING_CARD n'était pas la bonne, la bonne était : $WINNING_CARD. On recommence !" 
-    SendCardsToPlayers
+    sendMsgPlayers "2" "Perdu, la carte $INCOMING_CARD n'était pas la bonne, la bonne était : $WINNING_CARD. On recommence !" 
+    sendMsgRobot "2" "skip"
+    SendCards
   fi
   ListenPipe
 }
 
-function sendMsg(){
+function sendMsgPlayers(){
   MSG_TO_SEND=$2
   MSG_ID=$1
   echo $MSG_TO_SEND >> gestionJeu.tmp
   for x in $( eval echo {0..$(($NBPLAYERS-1))} );do
+    echo "$MSG_ID;$MSG_INDEX" > $x.pipe
+  done
+  MSG_INDEX+=1
+}
+
+function sendMsgRobot(){
+  MSG_TO_SEND=$2
+  MSG_ID=$1
+  echo $MSG_TO_SEND >> gestionJeu.tmp
+  for x in $( eval echo {$(($NBPLAYERS))..$(($NBPLAYERS+$NBROBOT-1))} );do
     echo "$MSG_ID;$MSG_INDEX" > $x.pipe
   done
   MSG_INDEX+=1
@@ -168,5 +192,5 @@ function removeOldFiles(){
 
 InitPlayers
 InitMaxRound
-SendCardsToPlayers
+SendCards
 ListenPipe

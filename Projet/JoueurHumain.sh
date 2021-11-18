@@ -1,7 +1,6 @@
 #!/bin/bash
 
 PLAYER_ID=$1
-declare -i ROUND=1 # On déclare un integer. Il décrit le numéro du tour
 CURRENT_CARDS=() # Contient les cartes du joueur
 declare -i NB_CARDS=0 # On déclare un integer. Il décrit le nombre de carte en main
 
