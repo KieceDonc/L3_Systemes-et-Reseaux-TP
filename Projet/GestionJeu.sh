@@ -71,15 +71,21 @@ function SendCards(){
 
   # On envoit les cartes pour chaque joueur
   CURRENT_ROUND_UNSORTED_CARDS=()
-  for x in $( eval echo {0..$(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT-1))} );do # Pour chaque joueur 
-    CURRENT_CARD=${CARDS[x]} # On recupère une carte 
-    ID_TO_SEND="$(($x / $ROUND))"
-    echo "sending cards $x to player $ID_TO_SEND"
-    echo "0;"$CURRENT_CARD > $ID_TO_SEND.pipe  # On l'envoit au joueur
-    CURRENT_ROUND_UNSORTED_CARDS+=($CURRENT_CARD) # On indique dans une liste non trier qu'une nouvelle carte est dans le jeu
+  declare -i CURRENT_CARD_INDEX=0
+  for x in $( eval echo {0..$(($NBPLAYERS+$NBROBOT-1))} );do 
+
+    for y in $( eval echo {0..$(($ROUND-1))} );do
+      CURRENT_CARD=${CARDS[CURRENT_CARD_INDEX]}
+      echo $CURRENT_CARD
+      CURRENT_ROUND_UNSORTED_CARDS+=($CURRENT_CARD)
+      CURRENT_CARD_INDEX+=1
+    done > $x"_CURRENT_CARDS.tmp"
+
   done
-  sendMsgPlayers "5" "Msg pour éviter de crash"
-  sendMsgRobot "5" "Msg pour éviter de crash"
+
+  # On envoit un message qui décrit que les cartes ont été distribuées 
+  sendMsgPlayers "5" ""
+  sendMsgRobot "5" ""
 
   # On trie les cartes que les joueurs doivent trouver
   CURRENT_ROUND_SORTED_CARDS=()
@@ -135,8 +141,7 @@ function updateFoundedCards(){
 function ListenPipe(){
   if [[ ! -p "gestionJeu.pipe" ]];then
     mkfifo gestionJeu.pipe
-  fi
-
+  
   INCOMING_CARD=$(cat gestionJeu.pipe) # On récupère la carte reçus
   WINNING_CARD=${CURRENT_ROUND_SORTED_CARDS[CURRENT_CARD_INDEX]} # On récupère la carte à trouvée
   if [ $(($WINNING_CARD)) -eq $(($INCOMING_CARD)) ];then
@@ -186,6 +191,7 @@ function sendMsgRobot(){
 }
 
 function removeOldFiles(){
+  rm .pipe 2>/dev/null
   rm *.tmp 2>/dev/null
   rm *.pipe 2>/dev/null
 }

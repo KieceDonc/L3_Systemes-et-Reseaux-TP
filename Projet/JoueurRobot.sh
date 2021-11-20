@@ -38,6 +38,7 @@ function getSmallestCard(){
 }
 
 function triggerShouldSendCard(){
+  NB_CARDS=${#CURRENT_CARDS[@]}
   if [ $(($NB_CARDS)) -gt $((0)) ];then
     LAST_FOUNDED_CARD=$1
     getSmallestCard
@@ -54,12 +55,13 @@ function ListenPipe(){
   API_CALL=${SPLIT_DATA[0]}
   API_MESSAGE=${SPLIT_DATA[1]}
 
-  if [ $(($API_CALL)) -eq $((0)) ];then # Une carte a été reçu
-    CURRENT_CARDS+=($API_MESSAGE)
-    NB_CARDS+=1
-  elif [ $(($API_CALL)) -eq $((1)) ];then # Une carte du tour courant a été trouvé
+  if [ $(($API_CALL)) -eq $((1)) ];then # Une carte du tour courant a été trouvé
     triggerShouldSendCard $API_MESSAGE
   elif [ $(($API_CALL)) -eq $((5)) ];then # Toutes les cartes ont été reçu
+    CURRENT_CARDS=()
+    while read CURRENT_CARD; do
+      CURRENT_CARDS+=("$CURRENT_CARD")
+    done < $ROBOT_ID"_CURRENT_CARDS.tmp"
     echo "Cartes reçues ! Vos cartes : "${CURRENT_CARDS[@]}
     triggerShouldSendCard $API_MESSAGE
   elif [ $(($API_CALL)) -eq $((2)) ];then # Une mauvaise carte a été trouvé, le tour recommence
@@ -88,5 +90,6 @@ function ListenPipe(){
 
 echo "Vous êtes le robot n°"$ROBOT_ID
 echo "En attente de vos cartes ..."
+
 
 ListenPipe 
