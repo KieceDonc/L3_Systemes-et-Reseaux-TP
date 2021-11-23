@@ -29,27 +29,29 @@ function InitPlayers(){
     done
   fi
   
-  for x in $( eval echo {$(($ROUND*$NBPLAYERS))..$(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT-1))} );do
-    xterm -e "./JoueurRobot.sh $x" & # Initialisation des terminaux en donnant en paramètre le n° du robot
-    mkfifo $x.pipe # Initialisation des pipes qui prennent le nom "n°robot.pipe"
-  done
+  if [ $(($NBROBOT)) -gt $((0)) ];then
+    for x in $( eval echo {$(($ROUND*$NBPLAYERS))..$(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT-1))} );do
+      xterm -e "./JoueurRobot.sh $x" & # Initialisation des terminaux en donnant en paramètre le n° du robot
+      mkfifo $x.pipe # Initialisation des pipes qui prennent le nom "n°robot.pipe"
+    done
+  fi;
 }
 
 function InitMaxRound(){
   MAX_ROUND=0
-  NOT_FOUND=true # On initialise un booléen qui va servir de drapeau pour savoir si on a trouver le nombre maximum de tour
+  NOT_FOUND=true # On initialise un booléen qui va servir de drapeau pour savoir si on a trouver le nombre maximum de tour
   while $NOT_FOUND 
   do
     if [ $(($MAX_ROUND*$NBPLAYERS+$MAX_ROUND*$NBROBOT)) -le $((100)) ];then # On vérifie si le nombre de carte distribués est inférieur ou égale à 100
-      MAX_ROUND+=1 # On peut rajouter un tour
+      MAX_ROUND+=1 # On peut rajouter un tour
     else
-      NOT_FOUND=false # On a trouver le nombre max de tour
+      NOT_FOUND=false # On a trouver le nombre max de tour
     fi
   done
 }
 
 function SendCards(){
-  # On initialise les cartes
+  # On initialise les cartes
   CARDS=()
 
   # On initialise l'index de la carte que l'on doit trouver pour le round courant
@@ -112,7 +114,7 @@ function removeValueAtIndexInUnsortedCards(){
   # Working with low array or high array but without numbers < 10 
 
   # Parce qu'il est impossible de faire 
-  # TMP={CURRENT_ROUND_UNSORTED_CARDS[@]}
+  # TMP={CURRENT_ROUND_UNSORTED_CARDS[@]}
   # CURRENT_ROUND_UNSORTED_CARDS=()
   # sans que TMP soit vide on recopie les valeurs de CURRENT_ROUND_UNSORTED_CARDS une par une 
   INDEX_TOREMOVE=$1
@@ -132,7 +134,7 @@ function removeValueAtIndexInUnsortedCards(){
 
 function updateFoundedCards(){
   FOUNDED_CARDS="( " # On prépare l'affichage de toutes les cartes trouver
-  for x in $( eval echo {0..$(($CURRENT_CARD_INDEX))} );do # On affiche toutes les cartes trouver
+  for x in $( eval echo {0..$(($CURRENT_CARD_INDEX))} );do # On affiche toutes les cartes trouver
     FOUNDED_CARDS="$FOUNDED_CARDS ${CURRENT_ROUND_SORTED_CARDS[x]} "
   done
   FOUNDED_CARDS="$FOUNDED_CARDS )"
@@ -141,16 +143,17 @@ function updateFoundedCards(){
 function ListenPipe(){
   if [[ ! -p "gestionJeu.pipe" ]];then
     mkfifo gestionJeu.pipe
+  fi
   
   INCOMING_CARD=$(cat gestionJeu.pipe) # On récupère la carte reçus
-  WINNING_CARD=${CURRENT_ROUND_SORTED_CARDS[CURRENT_CARD_INDEX]} # On récupère la carte à trouvée
+  WINNING_CARD=${CURRENT_ROUND_SORTED_CARDS[CURRENT_CARD_INDEX]} # On récupère la carte à trouvée
   if [ $(($WINNING_CARD)) -eq $(($INCOMING_CARD)) ];then
     updateFoundedCards
     sendMsgPlayers "1" "Bravo, une carte a été trouvés, voici les cartes trouvées : $FOUNDED_CARDS"
     sendMsgRobot "1" $FOUNDED_CARDS
     CURRENT_CARD_INDEX+=1 # Le tour continue, on incrémente l'index de la prochaine carte à trouvée
     if [ $(($CURRENT_CARD_INDEX)) -eq $(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT)) ];then # On vérifie si la dernière carte trouvée correspond à la dernière carte pouvant être jouer ce tour ( on vérifie si le tour est terminé )
-      if [ $(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT)) -le $((100)) ];then # On vérifie si il reste un tour
+      if [ $(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT)) -le $((100)) ];then # On vérifie si il reste un tour
         sendMsgPlayers "3" "Félications, le tour n°'$ROUND' est terminé, on passe au tour suivant"
         sendMsgRobot "3" $ROUND
         ROUND+=1
@@ -171,23 +174,27 @@ function ListenPipe(){
 }
 
 function sendMsgPlayers(){
-  MSG_TO_SEND=$2
-  MSG_ID=$1
-  echo $MSG_TO_SEND >> gestionJeu.tmp
-  for x in $( eval echo {0..$(($NBPLAYERS-1))} );do
+  if [ $(($NBPLAYERS)) -gt $((0)) ];then
+    MSG_TO_SEND=$2
+    MSG_ID=$1
+    echo $MSG_TO_SEND >> gestionJeu.tmp
+    for x in $( eval echo {0..$(($NBPLAYERS-1))} );do
     echo "$MSG_ID;$MSG_INDEX" > $x.pipe
-  done
-  MSG_INDEX+=1
+    done
+    MSG_INDEX+=1
+  fi
 }
 
 function sendMsgRobot(){
-  MSG_TO_SEND=$2
-  MSG_ID=$1
-  echo $MSG_TO_SEND >> gestionJeu.tmp
-  for x in $( eval echo {$(($NBPLAYERS))..$(($NBPLAYERS+$NBROBOT-1))} );do
-    echo "$MSG_ID;$MSG_INDEX" > $x.pipe
-  done
-  MSG_INDEX+=1
+  if [ $(($NBPLAYERS)) -gt $((0)) ];then
+    MSG_TO_SEND=$2
+    MSG_ID=$1
+    echo $MSG_TO_SEND >> gestionJeu.tmp
+    for x in $( eval echo {$(($NBPLAYERS))..$(($NBPLAYERS+$NBROBOT-1))} );do
+      echo "$MSG_ID;$MSG_INDEX" > $x.pipe
+    done
+    MSG_INDEX+=1
+  fi;
 }
 
 function removeOldFiles(){
