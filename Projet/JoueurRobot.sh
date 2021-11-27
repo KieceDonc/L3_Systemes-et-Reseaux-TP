@@ -7,22 +7,27 @@ SmallestCard=0
 LAST_FOUNDED_CARD=0
 
 function removeCard(){
+  # On supprime la carte jouée par l'utilisateur
+  NB_CARDS=${#CURRENT_CARDS[@]}
   TO_REMOVE=$1
-  NB_CARDS=$((${#CURRENT_CARDS[@]}))
   TMP=()
   for x in $( eval echo {0..$(($NB_CARDS-1))} );do
-    TMP+=(${CURRENT_CARDS[x]})
-  done
-
-  # On retire la valeur à l'index voulu
-  CURRENT_CARDS=()
-  for x in $( eval echo {0..$(($NB_CARDS-1))} );do
-    if [ $((${TMP[x]})) -ne $(($TO_REMOVE)) ];then
-      CURRENT_CARDS+=(${TMP[x]})
+    if [ $((${CURRENT_CARDS[x]})) -ne $(($TO_REMOVE)) ];then
+      TMP+=(${CURRENT_CARDS[x]})
     fi
   done
-  NB_CARDS=$((${#CURRENT_CARDS[@]}))
-  echo "Vos cartes ${CURRENT_CARDS[@]}"
+  NB_CARDS=$(($NB_CARDS-1))
+  CURRENT_CARDS=()
+  CURRENT_CARDS=(${TMP[@]})
+
+  # On effectue un affichage des cartes
+  if [ $(($NB_CARDS)) -eq $((0)) ];then
+    echo "Vous n'avez plus de cartes"
+  elif [ $(($NB_CARDS)) -eq $((1)) ];then
+    echo "Il vous reste une carte : " ${CURRENT_CARDS[@]}
+  else
+    echo "Vos cartes sont ${CURRENT_CARDS[@]}"
+  fi
 }
 
 function getSmallestCard(){
@@ -55,16 +60,16 @@ function ListenPipe(){
   API_CALL=${SPLIT_DATA[0]}
   API_MESSAGE=${SPLIT_DATA[1]}
 
-  if [ $(($API_CALL)) -eq $((1)) ];then # Une carte du tour courant a été trouvé
+  if [ $(($API_CALL)) -eq $((1)) ];then # Une carte du tour courant a été trouvée
     triggerShouldSendCard $API_MESSAGE
-  elif [ $(($API_CALL)) -eq $((5)) ];then # Toutes les cartes ont été reçu
+  elif [ $(($API_CALL)) -eq $((5)) ];then # Toutes les cartes ont été reçues
     CURRENT_CARDS=()
     while read CURRENT_CARD; do
       CURRENT_CARDS+=("$CURRENT_CARD")
     done < $ROBOT_ID"_CURRENT_CARDS.tmp"
     echo "Cartes reçues ! Vos cartes : "${CURRENT_CARDS[@]}
     triggerShouldSendCard $API_MESSAGE
-  elif [ $(($API_CALL)) -eq $((2)) ];then # Une mauvaise carte a été trouvé, le tour recommence
+  elif [ $(($API_CALL)) -eq $((2)) ];then # Une mauvaise carte a été trouvée, le tour recommence
     CURRENT_CARDS=()
     LAST_FOUNDED_CARD=999
   elif [ $(($API_CALL)) -eq $((3)) ];then # Le tour est terminé, on passe au tour suivant
@@ -77,7 +82,7 @@ function ListenPipe(){
       getSmallestCard
       CURRENT_DISTANCE_2=$(($SMALLEST_CARD-$LAST_FOUNDED_CARD))
 
-    if [ $(($RECEIVED_DISTANCE)) -eq $(($CURRENT_DISTANCE_2)) ];then # On vérifie si la distance n'a pas changé ( que aucune carte n'a été joué entre temps )
+    if [ $(($RECEIVED_DISTANCE)) -eq $(($CURRENT_DISTANCE_2)) ];then # On vérifie si la distance n'a pas changé ( que aucune carte n'a été jouée entre temps )
       # On joue la carte 
       echo $SMALLEST_CARD > gestionJeu.pipe
       echo "La carte $SMALLEST_CARD a été jouer"

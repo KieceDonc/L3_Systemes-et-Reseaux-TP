@@ -30,6 +30,7 @@ function InitPlayers(){
   fi
   
   if [ $(($NBROBOT)) -gt $((0)) ];then
+    # On initialise les terminaux + pipes pour les robots
     for x in $( eval echo {$(($ROUND*$NBPLAYERS))..$(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT-1))} );do
       xterm -e "./JoueurRobot.sh $x" & # Initialisation des terminaux en donnant en paramètre le n° du robot
       mkfifo $x.pipe # Initialisation des pipes qui prennent le nom "n°robot.pipe"
@@ -87,7 +88,7 @@ function SendCards(){
 
   # On envoit un message qui décrit que les cartes ont été distribuées 
   sendMsgPlayers "5" ""
-  sendMsgRobot "5" ""
+  sendMsgRobot "5" "robot msg skip"
 
   # On trie les cartes que les joueurs doivent trouver
   CURRENT_ROUND_SORTED_CARDS=()
@@ -110,26 +111,19 @@ function SendCards(){
 
 #
 function removeValueAtIndexInUnsortedCards(){
-  # USE TO REPLACE CURRENT_ROUND_UNSORTED_CARDS=( ${CURRENT_ROUND_UNSORTED_CARDS[@]/$CURRENT_MINUS}) 
+  # USE TO REPLACE CURRENT_ROUND_UNSORTED_CARDS=(${CURRENT_ROUND_UNSORTED_CARDS[@]/$CURRENT_MINUS}) 
   # Working with low array or high array but without numbers < 10 
 
-  # Parce qu'il est impossible de faire 
-  # TMP={CURRENT_ROUND_UNSORTED_CARDS[@]}
-  # CURRENT_ROUND_UNSORTED_CARDS=()
-  # sans que TMP soit vide on recopie les valeurs de CURRENT_ROUND_UNSORTED_CARDS une par une 
+  # On supprime la carte jouée par l'utilisateur
   INDEX_TOREMOVE=$1
   TMP=()
   for x in $( eval echo {0..$UNSORTED_INDEX} );do
-    TMP+=(${CURRENT_ROUND_UNSORTED_CARDS[x]})
-  done
-
-  # On retire la valeur à l'index voulu
-  CURRENT_ROUND_UNSORTED_CARDS=()
-  for x in $( eval echo {0..$UNSORTED_INDEX} );do
     if [ $(($x)) -ne $(($INDEX_TOREMOVE)) ];then
-      CURRENT_ROUND_UNSORTED_CARDS+=(${TMP[x]})
+      TMP+=(${CURRENT_ROUND_UNSORTED_CARDS[x]})
     fi
   done
+  CURRENT_ROUND_UNSORTED_CARDS=()
+  CURRENT_ROUND_UNSORTED_CARDS=(${TMP[@]})
 }
 
 function updateFoundedCards(){
@@ -141,39 +135,48 @@ function updateFoundedCards(){
 }
 
 function ListenPipe(){
+  # On regarde si la pipe a déjà été créer
+  # Cette condition est nécessaire pour créer la pipe lors de l'initialisation et éviter les erreurs lors des appels récursif de ListenPipe()
   if [[ ! -p "gestionJeu.pipe" ]];then
     mkfifo gestionJeu.pipe
   fi
   
   INCOMING_CARD=$(cat gestionJeu.pipe) # On récupère la carte reçus
   WINNING_CARD=${CURRENT_ROUND_SORTED_CARDS[CURRENT_CARD_INDEX]} # On récupère la carte à trouvée
-  if [ $(($WINNING_CARD)) -eq $(($INCOMING_CARD)) ];then
+  if [ $(($WINNING_CARD)) -eq $(($INCOMING_CARD)) ];then # On regarde si la carte jouer est la carte devant être trouver
+    # Une bonne carte a été jouer
     updateFoundedCards
-    sendMsgPlayers "1" "Bravo, une carte a été trouvés, voici les cartes trouvées : $FOUNDED_CARDS"
+    sendMsgPlayers "1" "Bravo, une carte a été trouvée, voici les cartes trouvées : $FOUNDED_CARDS"
     sendMsgRobot "1" $FOUNDED_CARDS
     CURRENT_CARD_INDEX+=1 # Le tour continue, on incrémente l'index de la prochaine carte à trouvée
     if [ $(($CURRENT_CARD_INDEX)) -eq $(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT)) ];then # On vérifie si la dernière carte trouvée correspond à la dernière carte pouvant être jouer ce tour ( on vérifie si le tour est terminé )
       if [ $(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT)) -le $((100)) ];then # On vérifie si il reste un tour
-        sendMsgPlayers "3" "Félications, le tour n°'$ROUND' est terminé, on passe au tour suivant"
+        # Le tour est terminer, on passe au tour suivant
+        sendMsgPlayers "3" "Félicitations, le tour n°'$ROUND' est terminé, on passe au tour suivant"
         sendMsgRobot "3" $ROUND
         ROUND+=1
         SendCards
      else
-        sendMsgPlayers "4" "Félications, le jeu est terminé" 
-        sendMsgRobot "4"
+        # Le jeu est terminer
+        sendMsgPlayers "4" "Félicitations, le jeu est terminé" 
+        sendMsgRobot "4" "robot msg skip"
         removeOldFiles
         exit
       fi
     fi
-  else
+  else 
+    # Une mauvaise carte a été jouée
     sendMsgPlayers "2" "Perdu, la carte $INCOMING_CARD n'était pas la bonne, la bonne était : $WINNING_CARD. On recommence !" 
-    sendMsgRobot "2" "skip"
+    sendMsgRobot "2" "robot msg skip"
     SendCards
   fi
   ListenPipe
 }
 
 function sendMsgPlayers(){
+  # Permet d'envoyer un message à tout les humains
+  # Prend un premier paramètre qui est l'id de l'action
+  # Prend un deuxième paramètre optionnel qui est un message que l'on souhaite afficher côté joueur
   if [ $(($NBPLAYERS)) -gt $((0)) ];then
     MSG_TO_SEND=$2
     MSG_ID=$1
@@ -186,6 +189,9 @@ function sendMsgPlayers(){
 }
 
 function sendMsgRobot(){
+  # Permet d'envoyer un message à tout les robots
+  # Prend un premier paramètre qui est l'id de l'action
+  # Prend un deuxième paramètre optionnel qui est un message que l'on souhaite afficher côté joueur
   if [ $(($NBPLAYERS)) -gt $((0)) ];then
     MSG_TO_SEND=$2
     MSG_ID=$1
@@ -198,6 +204,9 @@ function sendMsgRobot(){
 }
 
 function removeOldFiles(){
+  # Supprime toutes les pipes / tout les fichiers tmp précédent
+  # On envoit les messages d'erreurs vers null 
+  # Cette redirection est justifier par le fait que si il n'existe pas de fichiers .tmp alors rm affiche une erreur
   rm .pipe 2>/dev/null
   rm *.tmp 2>/dev/null
   rm *.pipe 2>/dev/null

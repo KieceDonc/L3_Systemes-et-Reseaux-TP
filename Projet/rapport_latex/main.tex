@@ -51,9 +51,34 @@ La structure générale de l'application est découpé en 3 programmes shell. Ge
 \subsection{Gestion Jeu}
 \subsubsection{L'initialisation}
 
-L'initialisation définit le nombre de joueur. Elle le fait en demandant d'abord le nombre de joueur humain puis ensuite le nombre de joueur robot. On lance ensuite les scripts nécessaire au travers d'un terminal xTerm. 
+Une première phase de l'initialisation définit le nombre de joueur. Elle le fait en demandant le nombre de joueur humain puis le nombre de joueur robot. On lance en conséquence les scripts nécessaire au travers d'un terminal xTerm. Chaque joueur humain obtient un terminal au travers du quel il peut interagir.
+\newline
+\newline
+Une deuxième phase de l'initialisation s'occupe de chercher le nombre maximum de tour / carte maximum que l'on peut distribuer. Il s'agit d'un petit algorithme qui incrémente une variable en fonction d'une condition. Cette condition est la suivante : si la variable multiplier par le nombre de joueur est inférieur à 100, alors on incrémente. On continue jusqu'à que la multiplication soit supérieur à 100. On en déduit à la fin le nombre maximum de tour.
+\newline
+\newline
+La troisième phase de l'initialisation appel la fonction qui gère les cartes. Nous allons décrire cette fonction dans la sous section suivante puisque elle est appelé à différent moment de la partie.  
 
-\subsubsection{La gestion des cartes }
+\subsubsection{La gestion des cartes}
+
+La gestion des cartes a trois objectifs :
+
+\begin{itemize}
+	\item Mélanger aléatoirement les cartes
+	\item Distribuer aux joueurs les cartes de 0 à N ( N = indice du rond multiplier par le nombre de joueur )
+	\item Trier les cartes distribuer pour savoir dans quel ordre elles doivent être jouer
+\end{itemize}
+
+Ces trois objectifs devant être atteint de manière récurrente dans le code, ils sont contenu dans une fonction. Cette fonction est appelé après chaque ronde, à chaque fois qu'une mauvaise carte est joué et lors de l'initialisation. 
+\newline
+\newline
+Le troisième objectif est motivé par une idée simple : on souhaite juste savoir la carte qui doit être jouer sans savoir quel joueur doit la jouer. 
+
+\subsubsection{La gestion du jeu}
+
+Imaginons que nous avons une API (elle est détaillé dans la section communications). Cette API nous permet de savoir une chose importante : 
+Une carte a été jouer et on connaît son nombre. C'est ici que tout prend son importance car nous allons effectuer en conséquences des traitements à partir de cette action.\newline
+On regarde tout d'abord si la carte jouer est la carte qui devait être jouer (merci l'objectif 3 de la gestion de cartes). Si ce n'est pas le cas, on notifie les joueurs que la carte tirée est mauvaise et on redistribue des cartes (fonction gestion des cartes) et le tour recommence. Sinon, on notifie tout les joueurs de la carte trouver. On regarde ensuite si il s'agissait de la dernière carte du tour. Si c'est le cas et qu'il reste un tour, on passe au tour suivant en redistribuant des cartes. 
 
 \subsection{Joueur Humain}
 \subsubsection{Le comportement du script}
@@ -63,13 +88,30 @@ L'initialisation définit le nombre de joueur. Elle le fait en demandant d'abord
 \subsection{Joueur robot}
 \subsubsection{Une copie de joueur humain ?}
 \subsubsection{Sa stratégie}
+Il a été difficile d'établir une stratégie pour le robot. Le problème a donc été décalée et on se repose sur le joueur. L'idée est simple. Quand le joueur estime que ce n'est pas son tour, il va laisser jouer. Ainsi, au bout d'un certains temps, le robot joue sa carte la plus faible. Malgré des faiblesses cette stratégie reste très forte car repose sur l'intelligence du joueur humain. 
 
 \section{La communication}
 
-\subsection{Les pipes}
-\subsection{Les fichiers tmp}
+Il existe dans ce projet plusieurs types de communications. On utilise les pipes pour communiquer des données et notifier des actions et les fichiers tmp pour synchroniser des données entre les shell et subshell
 
-\section{La gestion du temps}
+\subsection{Les pipes : une micro API}
+
+Chaque terminal utilisent constamment des pipes pour recevoir ou envoyer des données / actions. Il a été choisit de construire une micro API pour facilité cette communication. On envoie un message dans les pipes constituer de la forme suivante :
+\begin{center}
+[n°action];[message]
+\end{center}
+Le ";" permet de facilité la séparation et récupération du n°action et du message. Voici les n°action que l'on peut trouver:
+\begin{itemize}
+	\item N°1 décrit que la carte trouvée était la bonne.\newline Le message sera du type : \textit{Bravo, une carte a été trouvée, voici les cartes trouvées : (1 2 )}
+	\item N°2 décrit que la carte trouvée était mauvaise.\newline Le message sera du type : \textit{Perdu, la carte 2 n'était pas la bonne, la bonne était : 1. On recommence !}  
+	\item N°3 décrit que le tour est terminé, on passe au suivant.\newline Le message sera du type : \textit{Félicitations, le tour n°'2 est terminé, on passe au tour suivant} 
+	\item N°4 décrit que le jeu est terminé, on passe au suivant.\newline Le message sera du type : \textit{Félicitations, le jeu est terminé}
+	\item N°5 décrit que le joueur a reçu toutes ses cartes dans son fichier tmp     
+	\item N°9 est spécifique au robot. Il répond à un problème technique. Brièvement à chaque fois qu'une carte est jouer le robot s'envoie à lui même le message "9;distance" au bout d'un certains temps. "distance" étant la distance entre sa carte la plus faible et la dernière carte jouée. Comme ça si une nouvelle carte est jouée entre temps, la distance change et on laisse au joueur le temps de réévaluer la situation.  
+\end{itemize}
+
+\subsection{Les fichiers tmp}
+Les fichiers tmp sont présent pour résoudre le problème de synchronisation des variables entre le shell et le subshell (problème dû aux commandes bloquantes). Chaque ligne du fichier tmp représente une carte. On lit toutes les lignes pour savoir les cartes du joueur. Ainsi, pour transmettre des cartes, gestion jeu écrit dans le fichier tmp et envoit un message à travers les pipes pour décrire quand il a finit. Quand le joueur joue une carte, on réécrit toutes les cartes ligne à ligne dans le fichier sans celle jouée.  
 %----------------------------------------------------------------------------------------
 
 \end{document}
