@@ -7,7 +7,6 @@ declare -i CURRENT_CARD_INDEX=0 # On déclare un integer. Il décrit l'index de 
 NBPLAYERS=0 # Décrit le nombre de joueur
 NBROBOT=0 # Décrit le nombre de robot
 declare -i MAX_ROUND=0 # On déclare un integer. Décrit le nombre maximun de tour
-declare -i MSG_INDEX=1 # On déclare un integer. Il décrit la ligne du dernier message envoyé
 
 function InitPlayers(){
   # On demande le nombre de joueur
@@ -87,6 +86,9 @@ function SendCards(){
   done
 
   # On envoit un message qui décrit que les cartes ont été distribuées 
+  for x in $( eval echo {1..$(tput cols)});do
+    echo -e "-\c"
+  done
   sendMsgPlayers "5" ""
   sendMsgRobot "5" "robot msg skip"
 
@@ -106,7 +108,8 @@ function SendCards(){
     CURRENT_ROUND_SORTED_CARDS+=($CURRENT_MINUS)
     removeValueAtIndexInUnsortedCards $MINUS_INDEX
   done    
-  echo "Liste des cartes à trouver : ${CURRENT_ROUND_SORTED_CARDS[@]}"
+
+  echo "[LOGS] | Liste des cartes à trouver : ${CURRENT_ROUND_SORTED_CARDS[@]}"
 }
 
 #
@@ -146,28 +149,41 @@ function ListenPipe(){
   if [ $(($WINNING_CARD)) -eq $(($INCOMING_CARD)) ];then # On regarde si la carte jouer est la carte devant être trouver
     # Une bonne carte a été jouer
     updateFoundedCards
+    echo "[INFO] | La carte $INCOMING_CARD a été trouvée, voici les cartes trouvées : $FOUNDED_CARDS"
     sendMsgPlayers "1" "Bravo, une carte a été trouvée, voici les cartes trouvées : $FOUNDED_CARDS"
     sendMsgRobot "1" $FOUNDED_CARDS
     CURRENT_CARD_INDEX+=1 # Le tour continue, on incrémente l'index de la prochaine carte à trouvée
     if [ $(($CURRENT_CARD_INDEX)) -eq $(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT)) ];then # On vérifie si la dernière carte trouvée correspond à la dernière carte pouvant être jouer ce tour ( on vérifie si le tour est terminé )
       if [ $(($ROUND*$NBPLAYERS+$ROUND*$NBROBOT)) -le $((100)) ];then # On vérifie si il reste un tour
         # Le tour est terminer, on passe au tour suivant
+        echo "[INFO] | Le tour n°'$ROUND' est terminé"
         sendMsgPlayers "3" "Félicitations, le tour n°'$ROUND' est terminé, on passe au tour suivant"
+        for x in $( eval echo {1..$(tput cols)});do
+          echo -e "-\c"
+        done
         sendMsgRobot "3" $ROUND
         ROUND+=1
         SendCards
      else
         # Le jeu est terminer
+        echo "[INFO] | Le jeu est terminé"
         sendMsgPlayers "4" "Félicitations, le jeu est terminé" 
         sendMsgRobot "4" "robot msg skip"
+        for x in $( eval echo {1..$(tput cols)});do
+          echo -e "-\c"
+        done
         removeOldFiles
         exit
       fi
     fi
   else 
     # Une mauvaise carte a été jouée
+    echo "[INFO] | La carte $INCOMING_CARD n'était pas la bonne, la bonne était : $WINNING_CARD"
     sendMsgPlayers "2" "Perdu, la carte $INCOMING_CARD n'était pas la bonne, la bonne était : $WINNING_CARD. On recommence !" 
     sendMsgRobot "2" "robot msg skip"
+    for x in $( eval echo {1..$(tput cols)});do
+      echo -e "-\c"
+    done
     SendCards
   fi
   ListenPipe
@@ -180,27 +196,25 @@ function sendMsgPlayers(){
   if [ $(($NBPLAYERS)) -gt $((0)) ];then
     MSG_TO_SEND=$2
     MSG_ID=$1
-    echo $MSG_TO_SEND >> gestionJeu.tmp
     for x in $( eval echo {0..$(($NBPLAYERS-1))} );do
-    echo "$MSG_ID;$MSG_INDEX" > $x.pipe
+    echo "$MSG_ID;$MSG_TO_SEND" > $x.pipe
     done
-    MSG_INDEX+=1
   fi
+  echo "[LOGS] | L'action n°$MSG_ID a été envoyé aux joueurs humains"
 }
 
 function sendMsgRobot(){
   # Permet d'envoyer un message à tout les robots
   # Prend un premier paramètre qui est l'id de l'action
   # Prend un deuxième paramètre optionnel qui est un message que l'on souhaite afficher côté joueur
-  if [ $(($NBPLAYERS)) -gt $((0)) ];then
+  if [ $(($NBROBOT)) -gt $((0)) ];then
     MSG_TO_SEND=$2
     MSG_ID=$1
-    echo $MSG_TO_SEND >> gestionJeu.tmp
     for x in $( eval echo {$(($NBPLAYERS))..$(($NBPLAYERS+$NBROBOT-1))} );do
-      echo "$MSG_ID;$MSG_INDEX" > $x.pipe
+      echo "$MSG_ID;$MSG_TO_SEND" > $x.pipe
     done
-    MSG_INDEX+=1
   fi;
+  echo "[LOGS] | L'action n°$MSG_ID a été envoyé aux joueurs robots"
 }
 
 function removeOldFiles(){

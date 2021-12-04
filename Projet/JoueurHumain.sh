@@ -75,9 +75,8 @@ function ListenPipe(){
   INCOMING_DATA=$(cat $PLAYER_ID.pipe)
 
   # On récupère l'id et le message de l'action
-  SPLIT_DATA=(${INCOMING_DATA//;/ }) # https://stackoverflow.com/a/5257398
-  API_CALL=${SPLIT_DATA[0]}
-  API_MESSAGE=${SPLIT_DATA[1]}
+  API_CALL=${INCOMING_DATA:0:1}
+  API_MESSAGE=${INCOMING_DATA:2}
 
   # On traite l'action
   if [ $(($API_CALL)) -eq $((5)) ];then 
@@ -87,16 +86,16 @@ function ListenPipe(){
     ListenCardToPlay &
   elif [ $(($API_CALL)) -eq $((1)) ];then 
     # Une carte du tour courant a été trouvée
-    echo $(awk "NR==$API_MESSAGE" gestionJeu.tmp)
+    echo $API_MESSAGE
   elif [ $(($API_CALL)) -eq $((2)) ];then 
     # Une mauvaise carte a été trouvée, le tour recommence
-    echo $(awk "NR==$API_MESSAGE" gestionJeu.tmp)
+    echo $API_MESSAGE
   elif [ $(($API_CALL)) -eq $((3)) ];then 
     # Le tour est terminé, on passe au tour suivant
-    echo $(awk "NR==$API_MESSAGE" gestionJeu.tmp)
+    echo $API_MESSAGE
   elif [ $(($API_CALL)) -eq $((4)) ];then 
     # Le jeu est terminé
-    echo $(awk "NR==$API_MESSAGE" gestionJeu.tmp)
+    echo $API_MESSAGE
     read tmp
     exit
   fi
