@@ -88,6 +88,7 @@ Le ";" permet de facilité la séparation et récupération du n°action et du m
     	\caption{
 	    	Exemple d'une communication avec la micro API
     	}
+    	\label{fig:pipe}
 \end{figure}
 
 On remarquera qu'il suffit d'envoyer un chiffre à gestion jeu pour qu'il soit interpréter comme une carte jouer. Si l'application était beaucoup plus important, cela pourrait représenter une faille de sécurité importante. 
@@ -160,10 +161,7 @@ Le premier réflexe a été de copier coller le code du joueur humain et de remp
 Il a été difficile d'établir une stratégie pour le robot. Le problème a donc été décalée et on se repose sur le joueur. L'idée est simple. Quand le joueur estime que ce n'est pas son tour, il va laisser jouer. Ainsi, au bout d'un certains temps, le robot joue sa carte la plus faible. Malgré des faiblesses cette stratégie reste très forte car repose sur l'intelligence du joueur humain. 
 
 \subsubsection{Réception des communications(API) / affichage}
-rfrfrf
-
-\subsubsection{L'astuce de la distance}
-fefef
+La réception des communications reste le même principe que pour le joueur humain. Il existe cependant une exception qui est la réception de la distance comme expliquer dans la figure \ref{fig:pipe}. Elle permet de savoir si le robot doit jouer sa carte la plus faible ou non. 
 %----------------------------------------------------------------------------------------
 
 \end{document}
