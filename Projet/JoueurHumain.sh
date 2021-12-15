@@ -43,10 +43,14 @@ function ListenCardToPlay(){
         done  
 
         # On regarde si le joueur a bien des cartes et si il peut la jouée
-        if [ $NB_CARDS -eq $((0)) ];then
-          echo "Vous n'avez aucune carte à jouer"
-        elif [ "$CANT_PLAY_THIS_CARD" = true ]; then # Si l'entrée est mauvaise on lui montre ces cartes 
-            echo "Impossible de jouer cette carte, vos cartes sont :" ${CURRENT_CARDS[@]}
+        if [ "$CANT_PLAY_THIS_CARD" = true ]; then # Si l'entrée est mauvaise on lui montre ces cartes 
+          echo "Impossible de jouer cette carte, vos cartes sont :" ${CURRENT_CARDS[@]}
+        elif [ $(($NB_CARDS)) -eq $((0)) ];then
+          echo "Vous n'avez plus de cartes"
+        elif [ $(($NB_CARDS)) -eq $((1)) ];then
+          echo "Il vous reste une carte : " ${CURRENT_CARDS[@]}
+        else
+          echo "Vos cartes sont ${CURRENT_CARDS[@]}"
         fi
 
       fi
