@@ -44,9 +44,20 @@
 \bigskip
 \renewcommand{\contentsname}{Table des matières}
 \tableofcontents
+\newpage
 
-\bigskip
-\bigskip
+\section*{Utiliser le programme}
+\addcontentsline{toc}{section}{\protect\numberline{}Utiliser le programme}%
+\begin{itemize}
+	\item Décompresser l'archive contenant les fichiers shell
+	\item Lancer dans un terminal le fichier shell GestionJeu.sh
+	\begin{lstlisting}[language=bash]
+ 		$ ./GestionJeu.sh
+	\end{lstlisting}
+	\item Entrer le nombre de joueur humain puis le nombre de joueur robot
+	\item Les robots jouent automatiquement. Pour un humain cliquer sur le terminal et entrer la carte que vous souhaitez jouer( par exemple pour jouer 92, entrer 92 )
+	
+\end{itemize}
 
 \section*{Rappel des règles}
 \addcontentsline{toc}{section}{\protect\numberline{}Rappel des règles}%
@@ -162,6 +173,9 @@ Il a été difficile d'établir une stratégie pour le robot. Le problème a don
 
 \subsubsection{Réception des communications(API) / affichage}
 La réception des communications reste le même principe que pour le joueur humain. Il existe cependant une exception qui est la réception de la distance comme expliquer dans la figure \ref{fig:pipe}. Elle permet de savoir si le robot doit jouer sa carte la plus faible ou non. 
+
+\section{Conclusion}
+Le programme fonctionne bien en local et pour un nombre de joueurs limité. Cependant, l'extensibilité de cette application est mauvaise. On ne peut pas jouer en réseau et elle contient une faille importante de sécurité. Si l'on souhaite tout de même étendre l'application à un plus grand nombre de joueurs il faut revoir profondément la conception et peut être changer de langage. Une dizaine de millier de joueur sur le même script shell n'est peut être pas une bonne idée.
 %----------------------------------------------------------------------------------------
 
 \end{document}
